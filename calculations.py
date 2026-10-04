@@ -34,3 +34,5 @@ for _ in range(10):
     print("Cosecant is", cosecant(input))
     print("Secant is", secant(input))
     print("Cotangent is", cotangent(input))
+
+############ this is a new entry to test doing a pull request...................
