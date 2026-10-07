@@ -75,6 +75,14 @@ function App() {
 
   };
 
+  const handleDeleteKey= () => {
+    setDisplay(display.slice(0, -1));
+  }
+
+  const handleEqualKey = () => {
+    
+  }
+
   return (
     <div className="calculator">
       <h1>Calculator</h1>
@@ -85,7 +93,8 @@ function App() {
         <button onClick={() => handleButtonClick("7")}>7</button>
         <button onClick={() => handleButtonClick("8")}>8</button>
         <button onClick={() => handleButtonClick("9")}>9</button>
-        <button onClick={() => handleButtonClick("÷")}>÷</button>
+        <button onClick={() => handleDeleteKey()}>DEL</button>
+        
 
         <button onClick={() => handleButtonClick("4")}>4</button>
         <button onClick={() => handleButtonClick("5")}>5</button>
@@ -100,6 +109,7 @@ function App() {
         <button onClick={() => handleButtonClick("C")}>C</button>
         <button onClick={() => handleButtonClick("0")}>0</button>
         <button onClick={() => handleButtonClick("+")}>+</button>
+        <button onClick={() => handleButtonClick("÷")}>÷</button>
         <button className="equals" onClick={() => handleButtonClick("=")}>
           =
         </button>
