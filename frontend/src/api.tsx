@@ -8,9 +8,9 @@ export async function calculate(in_num1: number, in_operator: string, in_num2?: 
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            in_num1,
-            in_operator,
-            in_num2
+            num1: in_num1,
+            operator: in_operator,
+            num2: in_num2
         })
     })
     return response.json()

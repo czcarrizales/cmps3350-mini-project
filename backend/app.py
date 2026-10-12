@@ -48,8 +48,8 @@ def calculate():
         binary_operations = {
             "+": add,
             "-": subtract,
-            "*": multiply,
-            "/": divide,
+            "×": multiply,
+            "÷": divide,
             "^": power,
         }
 
