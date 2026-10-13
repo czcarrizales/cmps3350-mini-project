@@ -18,6 +18,47 @@ function App() {
   const [operator, setOperator] = useState<string | null>(null)
   const [num2, setNum2] = useState<string | null>(null)
   function resetInputs() { setNum1(null); setOperator(null); setNum2(null); setCalcState("EMPTY")}
+ 
+  function clearCalculator() {
+  setDisplay("0");
+  resetInputs();
+}
+
+async function calculateSafely(
+  firstNumber: string | null,
+  selectedOperator: string | null,
+  secondNumber?: string | null
+) {
+  if (!firstNumber || !selectedOperator) {
+    return;
+  }
+
+  try {
+    const data = await calculate(
+      firstNumber,
+      selectedOperator,
+      secondNumber ?? undefined
+    );
+
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+
+    resetInputs();
+    setDisplay(String(data.result));
+    setCalcState("ANSWER");
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "An unexpected error occurred";
+
+    resetInputs();
+    setDisplay(`Error: ${message}`);
+    setCalcState("ANSWER");
+  }
+}
+
   const [calcState, setCalcState] = useState<CalcState>("EMPTY")
   type CalcState = "EMPTY" | "NUM1" | "BINARY" | "UNARY" | "UNARY_NUM" | "BINARY_NUMS" | "ANSWER"
   // example states: __        34       34+        sin        sin(34        34+8          <result>
@@ -27,11 +68,17 @@ function App() {
 
     // console.log("before:", value, calcState, num1, operator, num2)
 
+  //  if (value === "C") {
+  //    setDisplay("0");
+  //    return;
+  //  }
+  // Replaaced this code with the if statment below it
+
     if (value === "C") {
-      setDisplay("0");
+      clearCalculator();
       return;
     }
-    
+  
     // if (value === "=") {
     //   // We'll connect this to the backend later.
     //   return;
@@ -55,11 +102,15 @@ function App() {
       else if (isBinaryOperator(input)) { setOperator(input); setDisplay(display + value); setCalcState("BINARY")}
       else if (isUnaryOperator(input)) {
         setOperator(input);
-        const data = await calculate(num1, operator); //sends data to backend
-        resetInputs();
-        setDisplay(String(data.result));
+        // Commented out the following, trying to do something else
+
+       // const data = await calculate(num1, operator); //sends data to backend
+        //resetInputs();
+        //setDisplay(String(data.result));
         // console.log("FULL RESPONSE:", data)
-        setCalcState("ANSWER");}
+        //setCalcState("ANSWER");}
+        await calculateSafely(num1, input);
+}
       return
     }
     if (calcState === "BINARY") {
@@ -68,34 +119,41 @@ function App() {
     }
     if (calcState === "UNARY") {
       if (isNumber(input)) { setNum1(input); setDisplay(display + value); setCalcState("UNARY_NUM")}
-      return
+      return;
     }
     if (calcState === "BINARY_NUMS") {
       if (isNumber(input)) { setNum2(num2 => (num2 ?? "") + input); setDisplay(display + value);}
       else if (input === "=") {
-        setNum2(num2 => (num2 ?? "") + input);
-        const data = await calculate(num1, operator, num2) //sends data to backend
-        resetInputs();
-        setDisplay(String(data.result));
+       // setNum2(num2 => (num2 ?? "") + input);
+        // Commented out the following lines, can always change later
+
+        //const data = await calculate(num1, operator, num2) //sends data to backend
+        //resetInputs();
+        //setDisplay(String(data.result));
         // console.log("FULL RESPONSE:", data)
-        setCalcState("ANSWER");}
-      return
+        //setCalcState("ANSWER");}
+        await calculateSafely(num1, operator, num2);
+      }
+      return;
     }
     if (calcState === "UNARY_NUM") {
       if (isNumber(input)) { setNum1(num1 => (num1 ?? "") + input); setDisplay(display + value);}
       else if (input === "=") {
-        setNum1(num1 => (num1 ?? "") + input);
-        const data = await calculate(num1, operator, num2); //sends data to backend
-        resetInputs();
-        setDisplay(String(data.result));
+         await calculateSafely(num1, operator);
+      }
+      // Commented out the following lines, can always change/delete later, I want to test it first
+       // setNum1(num1 => (num1 ?? "") + input);
+        //const data = await calculate(num1, operator, num2); //sends data to backend
+       // resetInputs();
+        //setDisplay(String(data.result));
         // console.log("FULL RESPONSE:", data)
-        setCalcState("ANSWER");}
-      return
+        //setCalcState("ANSWER");}
+      return;
     }
     if (calcState === "ANSWER") {
       if (isNumber(input)) { resetInputs(); setNum1(input); setDisplay(value); setCalcState("NUM1")}
       else if (isUnaryOperator(input)) { resetInputs(); setOperator(input); setDisplay(value); setCalcState("UNARY")}
-      return
+      return;
     }
   };
 
