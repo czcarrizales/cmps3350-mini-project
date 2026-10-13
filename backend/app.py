@@ -93,24 +93,14 @@ def calculate():
 @app.post("/evaluate")
 def evaluate():
     data = request.get_json(silent=True)
+    
+    parser = Parser(tokenize(str(data["expression"])))
+    result = parser.expr()
+       
+    if isinstance(result, float) and result.is_integer():
+        result = int(result)
 
-    if not isinstance(data, dict) or "expression" not in data:
-        return jsonify({"error": "expression is required"}), 400
-
-    try:
-        parser = Parser(tokenize(str(data["expression"])))
-        result = parser.expr()
-
-        if parser.peek() is not None:
-            raise SyntaxError("Unexpected token after end of expression")
-        
-        if isinstance(result, float) and result.is_integer():
-            result = int(result)
-
-        return jsonify({"result": result})
-
-    except (SyntaxError, TypeError, ValueError, ZeroDivisionError) as error:
-        return jsonify({"error": str(error)}), 400
+    return jsonify({"result": result})
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
