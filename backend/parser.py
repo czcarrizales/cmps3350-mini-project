@@ -14,8 +14,6 @@ def tokenize(expr):
     expr = expr.strip()
     while pos < len(expr):
         m = TOKEN.match(expr, pos)
-        if not m:
-            raise SyntaxError(f"Unexpected character: {expr[pos]}")
         token = m.group(1)
         tokens.append(token)
         pos = m.end()
@@ -73,14 +71,10 @@ class Parser:
 
     def atom(self):
         token = self.next()
-        if token is None:
-            raise SyntaxError("Unexpected end of input")
+        
         if token == '(':
             v = self.expr()
-            if self.next() != ')':
-                raise SyntaxError("Expected ')'")
+            self.next()
             return v
-        try:
-            return float(token)
-        except ValueError:
-            raise SyntaxError(f"Unexpected token: {token}")
+        
+        return float(token)
