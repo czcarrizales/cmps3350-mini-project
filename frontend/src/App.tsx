@@ -171,188 +171,82 @@ function App() {
 
   return (
     <div className="calculator">
+  <div className="calculator-header">
+    <h1>Calculator</h1>
 
-      <div className="calculator-header">
-  <h1>Calculator</h1>
-
-  <button
-    className="history-button"
-    onClick={() => setShowHistory(!showHistory)}
-  >
-    History
-  </button>
+    <button
+      className="history-toggle"
+      onClick={() => setShowHistory(!showHistory)}
+    >
+      {showHistory ? "Hide History" : "History"}
+    </button>
+  </div>
 
   {showHistory && (
-    <div className="history">
+    <div className="history-card">
       <h3>Recent Calculations</h3>
 
       {history.length === 0 ? (
-        <p>No calculations yet.</p>
+        <p className="empty-history">No calculations yet.</p>
       ) : (
         history.map((item, index) => (
           <div className="history-item" key={index}>
-            <div>{item.expression}</div>
-            <strong>= {item.result}</strong>
+            <div className="history-expression">{item.expression}</div>
+            <div className="history-result">= {item.result}</div>
           </div>
         ))
       )}
     </div>
   )}
+
+  <div className="display-card">
+    <div className="display">{display}</div>
+  </div>
+
+  <div className="buttons">
+    <button onClick={() => handleButtonClick("sin(")}>sin</button>
+    <button onClick={() => handleButtonClick("cos(")}>cos</button>
+    <button onClick={() => handleButtonClick("tan(")}>tan</button>
+    <button onClick={() => handleButtonClick("sqrt(")}>√</button>
+
+    <button onClick={() => handleButtonClick("csc(")}>csc</button>
+    <button onClick={() => handleButtonClick("sec(")}>sec</button>
+    <button onClick={() => handleButtonClick("cot(")}>cot</button>
+    <button onClick={() => handleButtonClick("²")}>x²</button>
+
+    <button onClick={() => handleButtonClick("abs(")}>|x|</button>
+    <button onClick={() => handleButtonClick("recip(")}>1/x</button>
+    <button onClick={() => handleButtonClick("%")}>%</button>
+    <button onClick={() => handleButtonClick("^")}>xʸ</button>
+
+    <button onClick={() => handleButtonClick("(")}>(</button>
+    <button onClick={() => handleButtonClick(")")}>)</button>
+    <button onClick={() => handleButtonClick("C")}>C</button>
+    <button onClick={handleDeleteKey}>DEL</button>
+
+    <button onClick={() => handleButtonClick("7")}>7</button>
+    <button onClick={() => handleButtonClick("8")}>8</button>
+    <button onClick={() => handleButtonClick("9")}>9</button>
+    <button onClick={() => handleButtonClick("÷")}>÷</button>
+
+    <button onClick={() => handleButtonClick("4")}>4</button>
+    <button onClick={() => handleButtonClick("5")}>5</button>
+    <button onClick={() => handleButtonClick("6")}>6</button>
+    <button onClick={() => handleButtonClick("×")}>×</button>
+
+    <button onClick={() => handleButtonClick("1")}>1</button>
+    <button onClick={() => handleButtonClick("2")}>2</button>
+    <button onClick={() => handleButtonClick("3")}>3</button>
+    <button onClick={() => handleButtonClick("-")}>−</button>
+
+    <button onClick={() => handleButtonClick("0")}>0</button>
+    <button onClick={() => handleButtonClick(".")}>.</button>
+    <button onClick={() => handleButtonClick("+")}>+</button>
+    <button className="equals" onClick={() => handleButtonClick("=")}>
+      =
+    </button>
+  </div>
 </div>
-
-
-      {/* Current expression or result */}
-      <div className="display">
-        {display}
-      </div>
-
-
-      <div className="buttons">
-
-        {/* Trigonometric functions */}
-        <button onClick={() => handleButtonClick("sin(")}>
-          sin
-        </button>
-
-        <button onClick={() => handleButtonClick("cos(")}>
-          cos
-        </button>
-
-        <button onClick={() => handleButtonClick("tan(")}>
-          tan
-        </button>
-
-        <button onClick={() => handleButtonClick("sqrt(")}>
-          √
-        </button>
-
-
-        <button onClick={() => handleButtonClick("csc(")}>
-          csc
-        </button>
-
-        <button onClick={() => handleButtonClick("sec(")}>
-          sec
-        </button>
-
-        <button onClick={() => handleButtonClick("cot(")}>
-          cot
-        </button>
-
-        <button onClick={() => handleButtonClick("²")}>
-          x²
-        </button>
-
-
-        {/* Other unary/special operations */}
-        <button onClick={() => handleButtonClick("abs(")}>
-          |x|
-        </button>
-
-        <button onClick={() => handleButtonClick("recip(")}>
-          1/x
-        </button>
-
-        <button onClick={() => handleButtonClick("%")}>
-          %
-        </button>
-
-        <button onClick={() => handleButtonClick("^")}>
-          xʸ
-        </button>
-
-
-        {/* Parentheses and editing */}
-        <button onClick={() => handleButtonClick("(")}>
-          (
-        </button>
-
-        <button onClick={() => handleButtonClick(")")}>
-          )
-        </button>
-
-        <button onClick={() => handleButtonClick("C")}>
-          C
-        </button>
-
-        <button onClick={handleDeleteKey}>
-          DEL
-        </button>
-
-
-        {/* Number pad */}
-        <button onClick={() => handleButtonClick("7")}>
-          7
-        </button>
-
-        <button onClick={() => handleButtonClick("8")}>
-          8
-        </button>
-
-        <button onClick={() => handleButtonClick("9")}>
-          9
-        </button>
-
-        <button onClick={() => handleButtonClick("÷")}>
-          ÷
-        </button>
-
-
-        <button onClick={() => handleButtonClick("4")}>
-          4
-        </button>
-
-        <button onClick={() => handleButtonClick("5")}>
-          5
-        </button>
-
-        <button onClick={() => handleButtonClick("6")}>
-          6
-        </button>
-
-        <button onClick={() => handleButtonClick("×")}>
-          ×
-        </button>
-
-
-        <button onClick={() => handleButtonClick("1")}>
-          1
-        </button>
-
-        <button onClick={() => handleButtonClick("2")}>
-          2
-        </button>
-
-        <button onClick={() => handleButtonClick("3")}>
-          3
-        </button>
-
-        <button onClick={() => handleButtonClick("-")}>
-          −
-        </button>
-
-
-        <button onClick={() => handleButtonClick("0")}>
-          0
-        </button>
-
-        <button onClick={() => handleButtonClick(".")}>
-          .
-        </button>
-
-        <button onClick={() => handleButtonClick("+")}>
-          +
-        </button>
-
-        <button
-          className="equals"
-          onClick={() => handleButtonClick("=")}
-        >
-          =
-        </button>
-
-      </div>
-    </div>
   );
 }
 
