@@ -2,61 +2,123 @@
 
 A calculator web application built with a React/TypeScript frontend and a Python/Flask backend.
 
-## Project Structure
+---
 
-```text
-cmps3350-mini-project/
-├── backend/
-│   ├── app.py
-│   ├── calculations.py
-│   └── parser.py
-├── frontend/
-│   ├── src/
-│   ├── package.json
-│   └── ...
-├── requirements.txt
-└── README.md
+## Before You Start
+
+### Keep Your Branch Up to Date
+
+Before beginning new work, make sure your branch includes the latest changes from `main`.
+
+If you are already working on your own branch:
+
+```bash
+git pull origin main
 ```
 
-- `backend/` - Flask API and calculator/parser logic
-- `frontend/` - React + TypeScript + Vite user interface
-- `requirements.txt` - Python dependencies
+This brings the latest changes from `main` into your current branch while preserving the work already on your branch.
+
+It is recommended to update your branch:
+
+- Before starting a new work session
+- After major changes are merged into `main`
+- Before opening a Pull Request
+- Whenever GitHub shows that your branch is behind `main`
+
+Keeping your branch current helps reduce merge conflicts and prevents you from developing against outdated code.
 
 ---
 
-# Running the Project
+# Quick Start
 
-The frontend and backend run separately.
+If you have already completed the **First-Time Setup**, use these instructions whenever you want to run the project.
 
-**You need TWO terminals open while developing:**
+The frontend and backend run separately, so you will need **two terminals**.
 
 ```text
 Terminal 1 → Flask backend
 Terminal 2 → React frontend
 ```
 
-Both must be running for the full calculator to work.
+## Run the Backend
+
+### Windows - PowerShell
+
+From the project root:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m backend.app
+```
+
+### macOS
+
+From the project root:
+
+```bash
+source .venv/bin/activate
+python -m backend.app
+```
+
+The backend should run at:
+
+```text
+http://127.0.0.1:5000
+```
+
+Keep this terminal open while using the application.
 
 ---
 
-## Prerequisites
+## Run the Frontend
 
-Make sure you have these installed:
+Open a second terminal from the project root:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Vite will display the local frontend address, usually:
+
+```text
+http://localhost:5173
+```
+
+Open that address in your browser.
+
+> Both the frontend and backend must be running for the calculator to work correctly.
+
+---
+
+# First-Time Setup
+
+Only follow this section when setting up the project on a computer for the first time.
+
+## 1. Install the Required Software
+
+Make sure the following are installed:
 
 - Git
 - Python 3
-- Node.js and npm
+- Node.js
+- npm
 
-You can check with:
+Check your installations with:
 
 ```bash
 git --version
-python --version
 node --version
 npm --version
 ```
 
-On macOS, Python may need to be checked with:
+### Windows
+
+```powershell
+py --version
+```
+
+### macOS
 
 ```bash
 python3 --version
@@ -64,9 +126,7 @@ python3 --version
 
 ---
 
-# First-Time Setup
-
-## 1. Clone the Repository
+## 2. Clone the Repository
 
 ```bash
 git clone https://github.com/czcarrizales/cmps3350-mini-project.git
@@ -75,47 +135,65 @@ cd cmps3350-mini-project
 
 ---
 
-## 2. Set Up the Backend
+## 3. Set Up the Backend
 
-The Python virtual environment should be created in the **root project folder**.
+The Python virtual environment will be stored in the project root as:
+
+```text
+.venv/
+```
+
+You only need to create the virtual environment once.
 
 ### Windows - PowerShell
+
+From the project root:
 
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+python -m pip install -r backend\requirements.txt
+```
+
+Then start the backend:
+
+```powershell
 python -m backend.app
 ```
 
+---
+
 ### macOS
+
+From the project root:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+python -m pip install -r backend/requirements.txt
+```
+
+Then start the backend:
+
+```bash
 python -m backend.app
 ```
 
-The backend should start at:
+The backend should be available at:
 
 ```text
 http://127.0.0.1:5000
 ```
 
-Opening that address in your browser should show a message indicating that the calculator backend is running.
-
-> Run the backend from the **root project directory** using `python -m backend.app`.
+> You do **not** need to run `python -m venv .venv` every time.
 >
-> Do not `cd backend` and run `python app.py`, because the backend imports modules using the `backend` package path.
-
-Leave this terminal running.
+> After the first setup, simply activate the existing virtual environment before running the backend.
 
 ---
 
-## 3. Set Up the Frontend
+## 4. Set Up the Frontend
 
-Open a **second terminal** in the project root.
+Open another terminal from the project root:
 
 ```bash
 cd frontend
@@ -123,41 +201,14 @@ npm install
 npm run dev
 ```
 
-Vite will print the local frontend address in the terminal, usually:
+`npm install` installs the frontend dependencies listed in `package.json`.
 
-```text
-http://localhost:5173
-```
+You normally only need to run it:
 
-Open that address in your browser.
+- During the first setup
+- When frontend dependencies have changed
 
-Keep the backend terminal running at the same time.
-
----
-
-# Starting the Project Later
-
-You only need to install the dependencies the first time.
-
-After that, starting the project is much shorter.
-
-## Terminal 1 - Backend
-
-### Windows
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-python -m backend.app
-```
-
-### macOS
-
-```bash
-source .venv/bin/activate
-python -m backend.app
-```
-
-## Terminal 2 - Frontend
+After setup, starting the frontend only requires:
 
 ```bash
 cd frontend
@@ -166,43 +217,103 @@ npm run dev
 
 ---
 
-# Git Workflow
+# Git Reference
 
-## Important: Keep Your Branch Updated With `main`
+## Check Your Current Status
 
-Do **not** work for days on a branch that has not received recent changes from `main`.
-
-As other people's code gets merged into `main`, your branch becomes older.
-
-Regularly bring the newest `main` into your branch.
-
-### Recommended Workflow
-
-Suppose your branch is called:
-
-```text
-solo
+```bash
+git status
 ```
 
-Switch to your branch:
+Shows:
+
+- Your current branch
+- Modified files
+- Staged files
+- Untracked files
+
+This is a good command to run whenever you are unsure what Git is currently tracking.
+
+---
+
+## View Your Branches
+
+```bash
+git branch
+```
+
+The branch with `*` next to it is your current branch.
+
+---
+
+## Switch Branches
+
+```bash
+git switch branch-name
+```
+
+Example:
 
 ```bash
 git switch solo
 ```
 
-Download the latest information from GitHub:
+---
+
+## Create a New Branch
+
+Before creating a branch, make sure `main` is current:
 
 ```bash
-git fetch origin
+git switch main
+git pull
 ```
 
-Then merge the newest remote `main` into your current branch:
+Then create and switch to your new branch:
 
 ```bash
-git merge origin/main
+git switch -c branch-name
 ```
 
-This means:
+Example:
+
+```bash
+git switch -c calculator-history
+```
+
+---
+
+## Update Your Current Branch
+
+```bash
+git pull
+```
+
+A normal `git pull` updates your current branch from its corresponding branch on GitHub.
+
+For example, if you are on:
+
+```text
+solo
+```
+
+then `git pull` will normally update:
+
+```text
+origin/solo → solo
+```
+
+---
+
+## Bring the Latest `main` Into Your Branch
+
+While you are on your own branch:
+
+```bash
+git pull origin main
+```
+
+For example, if you are on `solo`:
 
 ```text
 origin/main
@@ -210,63 +321,69 @@ origin/main
    solo
 ```
 
-Your work on `solo` is **not erased**.
+This does **not** merge your branch into `main`.
 
-Git combines the changes from `main` with the changes already on your branch.
+It updates your branch with the latest work that has already been added to `main`.
 
-If the same code was changed in both places, Git may ask you to resolve a merge conflict.
-
-### Do This Regularly
-
-Especially:
-
-- before starting a large amount of work
-- after major changes have been merged into `main`
-- before opening a pull request
-- when GitHub says your branch is behind `main`
+Use this regularly so your branch does not become significantly outdated.
 
 ---
 
-# Creating a New Branch
-
-Before creating a new branch, make sure your local `main` is current:
+## Download Remote Changes Without Modifying Your Branch
 
 ```bash
-git switch main
-git pull origin main
+git fetch origin
 ```
 
-Then create your branch:
+`git fetch` downloads information about new commits and branches from GitHub, but it does **not** automatically change your current files.
 
-```bash
-git switch -c your-branch-name
-```
-
-Because you created it from the updated `main`, the new branch starts with the newest project code.
+This is useful when you want to check what has changed remotely before merging anything.
 
 ---
 
-# Saving and Pushing Your Work
-
-Check what changed:
+## See Your Changes
 
 ```bash
-git status
+git diff
 ```
 
-Stage your changes:
+Shows changes you have made but have not yet staged.
+
+---
+
+## Stage Your Changes
+
+Stage everything you changed:
 
 ```bash
 git add .
 ```
 
-Commit them:
+Or stage one specific file:
+
+```bash
+git add filename
+```
+
+---
+
+## Commit Your Changes
 
 ```bash
 git commit -m "Describe what you changed"
 ```
 
-Push the branch:
+Use a short message that clearly describes the work in the commit.
+
+Example:
+
+```bash
+git commit -m "Add calculator history display"
+```
+
+---
+
+## Push Your Changes
 
 ```bash
 git push
@@ -275,101 +392,47 @@ git push
 If this is the first time pushing a new branch:
 
 ```bash
-git push -u origin your-branch-name
+git push -u origin branch-name
+```
+
+Example:
+
+```bash
+git push -u origin calculator-history
 ```
 
 After that, regular `git push` is enough.
 
 ---
 
-# Git Cheat Sheet
+## Typical Work Session
 
-| Command | What It Does |
-|---|---|
-| `git status` | Shows your current branch and changed/staged files |
-| `git diff` | Shows changes you have made but have not staged |
-| `git branch` | Shows your local branches |
-| `git switch branch-name` | Switches to another branch |
-| `git switch -c branch-name` | Creates a new branch and switches to it |
-| `git fetch origin` | Downloads information about the newest remote commits **without changing your files** |
-| `git pull` | Fetches and integrates the configured remote branch into your current branch |
-| `git pull origin main` | Fetches `main` and integrates it into whichever branch you are currently on |
-| `git merge origin/main` | Merges the latest fetched remote `main` into your current branch |
-| `git add .` | Stages your current changes |
-| `git commit -m "message"` | Saves the staged changes as a Git commit |
-| `git push` | Uploads your commits to GitHub |
-| `git log --oneline` | Shows recent commits in a compact format |
-
-## `git fetch` vs `git pull`
-
-This distinction is important.
+A normal work session may look like this:
 
 ```bash
-git fetch origin
-```
-
-means:
-
-> "GitHub, tell me about the newest commits."
-
-It **does not change your current branch**.
-
-Meanwhile:
-
-```bash
+git switch your-branch
 git pull
+git pull origin main
 ```
 
-roughly means:
+Then work on your code.
 
-```text
-fetch + integrate
-```
-
-But a plain `git pull` normally updates your current branch from its configured remote branch.
-
-For example, if you are on:
-
-```text
-solo
-```
-
-then:
+When you are ready to save and upload your changes:
 
 ```bash
-git pull
-```
-
-will normally update `solo` from `origin/solo`.
-
-It does **not automatically bring `main` into `solo`**.
-
-That is why this is the clearest way to update your branch from `main`:
-
-```bash
-git fetch origin
-git merge origin/main
+git status
+git add .
+git commit -m "Describe your changes"
+git push
 ```
 
 ---
 
-# Merge Conflicts
+## Merge Conflicts
 
-A merge conflict means Git found changes in both branches that it cannot safely combine automatically.
+If Git reports a merge conflict, it means both branches changed the same part of a file and Git cannot safely decide which version should be used.
 
-For example:
-
-```bash
-git switch solo
-git fetch origin
-git merge origin/main
-```
-
-may report a conflict.
-
-Open the conflicted files and resolve the conflicting sections.
-
-Then:
+Resolve the conflicting sections in the affected files, then:
 
 ```bash
 git add .
@@ -383,88 +446,37 @@ If GitHub says:
 These conflicts are too complex to resolve in the web editor
 ```
 
-resolve the merge locally instead using the commands above.
+resolve the conflict locally in VS Code instead.
 
 ---
 
-# Branch Direction Matters
-
-If you are currently on `solo` and run:
-
-```bash
-git merge origin/main
-```
-
-you are doing:
+# Project Structure
 
 ```text
-main → solo
+cmps3350-mini-project/
+├── backend/
+│   ├── app.py
+│   ├── calculations.py
+│   ├── parser.py
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   ├── package-lock.json
+│   └── ...
+│
+├── .venv/
+└── README.md
 ```
 
-You are **not** putting `solo` into `main`.
+### Backend
 
-Your feature branch should normally be merged into `main` through a Pull Request:
+The backend uses Python and Flask to process calculator expressions and return results to the frontend.
 
-```text
-solo → Pull Request → main
-```
+### Frontend
 
-A good team workflow is therefore:
-
-```text
-main → your branch     regularly while working
-
-your branch → main     when the work is finished/reviewed
-```
-
----
-
-# Troubleshooting
-
-## Frontend Loads but Calculations Do Not Work
-
-Make sure the Flask backend is also running:
-
-```text
-http://127.0.0.1:5000
-```
-
-The frontend communicates with the backend on port `5000`.
-
-## `ModuleNotFoundError: No module named 'backend'`
-
-Make sure you are in the repository root and start Flask with:
-
-```bash
-python -m backend.app
-```
-
-not from inside the `backend` folder.
-
-## `npm` Is Not Recognized
-
-Install Node.js, then reopen your terminal.
-
-## Frontend Dependencies Changed
-
-If somebody changes `package.json` or `package-lock.json`, run:
-
-```bash
-cd frontend
-npm install
-```
-
-again after pulling the changes.
-
-## Backend Dependencies Changed
-
-After pulling changes, run:
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-again if `requirements.txt` changed.
+The frontend uses React, TypeScript, and Vite to provide the calculator interface.
 
 ---
 
@@ -472,7 +484,10 @@ again if `requirements.txt` changed.
 
 ## Core Requirements
 
-- Addition, subtraction, multiplication, and division
+- Addition
+- Subtraction
+- Multiplication
+- Division
 - Calculator UI/display
 - Decimal input
 - PEMDAS/operator precedence
@@ -502,4 +517,4 @@ again if `requirements.txt` changed.
 
 # Team Coordination
 
-We communicate through Discord and use the GitHub Project board to track tasks and progress.
+The team communicates through Discord and uses the GitHub Project board to track tasks and progress.
