@@ -89,18 +89,63 @@ from backend.parser import tokenize, Parser
 
 @app.post("/evaluate")
 def evaluate():
-    data = request.get_json(silent=True)
-    
-    parser = Parser(tokenize(str(data["expression"])))
-    result = parser.expr()
-       
-    if isinstance(result, float):
-        result = round(result, 4)
+    try:
+        # Get the JSON data that the frontend sent to the backend.
+        # Example:
+        # { "expression": "5+3" }
+        data = request.get_json(silent=True)
 
-    if result.is_integer():
-        result = int(result)
+        # Make sure we actually received usable data
+        # and that it contains an expression to calculate.
+        if not isinstance(data, dict) or "expression" not in data:
+            return jsonify({"error": "Expression is required"}), 400
 
-    return jsonify({"result": result})
+        expression = str(data["expression"])
+
+        # Do not try to calculate an empty expression.
+        if not expression.strip():
+            return jsonify({"error": "Expression cannot be empty"}), 400
+
+        # Break the expression into pieces the parser understands.
+        # Example:
+        # "5+3×2" becomes ["5", "+", "3", "×", "2"]
+        tokens = tokenize(expression)
+
+        # Give those pieces to the parser.
+        # The parser handles things like PEMDAS and parentheses.
+        parser = Parser(tokens)
+
+        # Calculate the final answer.
+        result = parser.expr()
+
+        # If there are still unused pieces after the parser finishes,
+        # something was probably wrong with the expression.
+        # Example: "5)" should not quietly be accepted as just "5".
+        if parser.peek() is not None:
+            raise ValueError("Invalid expression")
+
+        # If the answer is a decimal, limit it to 4 decimal places.
+        # Example: 10 / 3 becomes 3.3333
+        if isinstance(result, float):
+            result = round(result, 4)
+
+            # If the decimal is really a whole number,
+            # display 5 instead of 5.0.
+            if result.is_integer():
+                result = int(result)
+
+        # Send the successful answer back to the frontend.
+        # Example:
+        # { "result": 8 }
+        return jsonify({"result": result})
+
+    # Catch common calculation or input errors instead of letting
+    # the Flask server crash and return an ugly server error.
+    except (ValueError, TypeError, AttributeError, ZeroDivisionError) as error:
+
+        # Send a readable error message back to the frontend.
+        # HTTP 400 means the request could not be calculated as entered.
+        return jsonify({"error": str(error)}), 400
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
