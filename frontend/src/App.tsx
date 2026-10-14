@@ -24,7 +24,7 @@ function App() {
   // calculation or continue using the previous answer.
   const [justEvaluated, setJustEvaluated] = useState(false);
 
-
+const [showAdvanced, setShowAdvanced] = useState(false);
   // Send the full expression to the Flask backend.
   //
   // Example:
@@ -172,15 +172,24 @@ function App() {
   return (
     <div className="calculator">
   <div className="calculator-header">
-    <h1>Calculator</h1>
+  <h1>Calculator</h1>
+
+  <div className="header-buttons">
+    <button
+      className="mode-button"
+      onClick={() => setShowAdvanced(!showAdvanced)}
+    >
+      {showAdvanced ? "Basic" : "Scientific"}
+    </button>
 
     <button
       className="history-toggle"
       onClick={() => setShowHistory(!showHistory)}
     >
-      {showHistory ? "Hide History" : "History"}
+      History
     </button>
   </div>
+</div>
 
   {showHistory && (
     <div className="history-card">
@@ -204,21 +213,24 @@ function App() {
   </div>
 
   <div className="buttons">
-    <button onClick={() => handleButtonClick("sin(")}>sin</button>
-    <button onClick={() => handleButtonClick("cos(")}>cos</button>
-    <button onClick={() => handleButtonClick("tan(")}>tan</button>
-    <button onClick={() => handleButtonClick("sqrt(")}>√</button>
+    {showAdvanced && (
+    <>
+      <button onClick={() => handleButtonClick("sin(")}>sin</button>
+      <button onClick={() => handleButtonClick("cos(")}>cos</button>
+      <button onClick={() => handleButtonClick("tan(")}>tan</button>
+      <button onClick={() => handleButtonClick("sqrt(")}>√</button>
 
-    <button onClick={() => handleButtonClick("csc(")}>csc</button>
-    <button onClick={() => handleButtonClick("sec(")}>sec</button>
-    <button onClick={() => handleButtonClick("cot(")}>cot</button>
-    <button onClick={() => handleButtonClick("²")}>x²</button>
+      <button onClick={() => handleButtonClick("csc(")}>csc</button>
+      <button onClick={() => handleButtonClick("sec(")}>sec</button>
+      <button onClick={() => handleButtonClick("cot(")}>cot</button>
+      <button onClick={() => handleButtonClick("²")}>x²</button>
 
-    <button onClick={() => handleButtonClick("abs(")}>|x|</button>
-    <button onClick={() => handleButtonClick("recip(")}>1/x</button>
-    <button onClick={() => handleButtonClick("%")}>%</button>
-    <button onClick={() => handleButtonClick("^")}>xʸ</button>
-
+      <button onClick={() => handleButtonClick("abs(")}>|x|</button>
+      <button onClick={() => handleButtonClick("recip(")}>1/x</button>
+      <button onClick={() => handleButtonClick("%")}>%</button>
+      <button onClick={() => handleButtonClick("^")}>xʸ</button>
+    </>
+  )}
     <button onClick={() => handleButtonClick("(")}>(</button>
     <button onClick={() => handleButtonClick(")")}>)</button>
     <button onClick={() => handleButtonClick("C")}>C</button>
@@ -230,21 +242,21 @@ function App() {
     <button onClick={() => handleButtonClick("÷")}>÷</button>
 
     <button onClick={() => handleButtonClick("4")}>4</button>
-    <button onClick={() => handleButtonClick("5")}>5</button>
-    <button onClick={() => handleButtonClick("6")}>6</button>
-    <button onClick={() => handleButtonClick("×")}>×</button>
+<button onClick={() => handleButtonClick("5")}>5</button>
+<button onClick={() => handleButtonClick("6")}>6</button>
+<button onClick={() => handleButtonClick("-")}>−</button>
 
-    <button onClick={() => handleButtonClick("1")}>1</button>
-    <button onClick={() => handleButtonClick("2")}>2</button>
-    <button onClick={() => handleButtonClick("3")}>3</button>
-    <button onClick={() => handleButtonClick("-")}>−</button>
+<button onClick={() => handleButtonClick("1")}>1</button>
+<button onClick={() => handleButtonClick("2")}>2</button>
+<button onClick={() => handleButtonClick("3")}>3</button>
+<button onClick={() => handleButtonClick("+")}>+</button>
 
-    <button onClick={() => handleButtonClick("0")}>0</button>
-    <button onClick={() => handleButtonClick(".")}>.</button>
-    <button onClick={() => handleButtonClick("+")}>+</button>
-    <button className="equals" onClick={() => handleButtonClick("=")}>
-      =
-    </button>
+
+<button onClick={() => handleButtonClick("0")}>0</button>
+<button onClick={() => handleButtonClick(".")}>.</button>
+<button className="equals" onClick={() => handleButtonClick("=")}>
+  =
+</button>
   </div>
 </div>
   );
