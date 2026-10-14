@@ -172,36 +172,33 @@ function App() {
   return (
     <div className="calculator">
 
-      {/* Calculator title and history button */}
       <div className="calculator-header">
-        <h1>Calculator</h1>
+  <h1>Calculator</h1>
 
-        <button
-          className="history-button"
-          onClick={() => setShowHistory(!showHistory)}
-        >
-          History
-        </button>
-      </div>
+  <button
+    className="history-button"
+    onClick={() => setShowHistory(!showHistory)}
+  >
+    History
+  </button>
 
+  {showHistory && (
+    <div className="history">
+      <h3>Recent Calculations</h3>
 
-      {/* Only show this section when History is clicked */}
-      {showHistory && (
-        <div className="history">
-          <h3>Recent Calculations</h3>
-
-          {history.length === 0 ? (
-            <p>No calculations yet.</p>
-          ) : (
-            history.map((item, index) => (
-              <div className="history-item" key={index}>
-                <div>{item.expression}</div>
-                <strong>= {item.result}</strong>
-              </div>
-            ))
-          )}
-        </div>
+      {history.length === 0 ? (
+        <p>No calculations yet.</p>
+      ) : (
+        history.map((item, index) => (
+          <div className="history-item" key={index}>
+            <div>{item.expression}</div>
+            <strong>= {item.result}</strong>
+          </div>
+        ))
       )}
+    </div>
+  )}
+</div>
 
 
       {/* Current expression or result */}
