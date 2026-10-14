@@ -1,25 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from backend.calculations import (
-    add,
-    subtract,
-    multiply,
-    divide,
-    power,
-    square,
-    square_root,
-    percentage,
-    absolute_value,
-    reciprocal,
-    sine,
-    cosine,
-    tangent,
-    cosecant,
-    secant,
-    cotangent,
-)
-
 app = Flask(__name__)
 CORS(app)
 
