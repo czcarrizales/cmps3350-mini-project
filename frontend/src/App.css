@@ -104,17 +104,20 @@ body {
 .buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 8px;
 }
 
 .buttons button {
-  min-height: 68px;
-  padding: 10px;
-  background: #ffffff;
+  min-height: 54px;
+  padding: 8px;
+
+  background: white;
   border: 3px solid #111;
-  border-radius: 18px;
+  border-radius: 14px;
+
   font-size: 18px;
   font-weight: 600;
+
   cursor: pointer;
   box-shadow: 3px 3px 0 #111;
 }
@@ -128,8 +131,10 @@ body {
   box-shadow: 1px 1px 0 #111;
 }
 
-.equals {
-  background: #ffde2e !important;
+.buttons .equals {
+  grid-column: span 2;
+  background: #ffde2e;
+  font-weight: 700;
 }
 
 @media (max-width: 480px) {
@@ -151,4 +156,24 @@ body {
     min-height: 60px;
     font-size: 16px;
   }
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.mode-button,
+.history-toggle {
+  padding: 10px 14px;
+
+  background: #ffde2e;
+  border: 3px solid #111;
+  border-radius: 14px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #111;
 }
