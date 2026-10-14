@@ -55,13 +55,14 @@ function App() {
       return;
     }
 
-    // if (display === "0") {
-    //   setDisplay(value);
-    // } else {
-    //   setDisplay(display + value);
-    // }
+     if (display === "0") {
+       setDisplay(value);
+     } else {
+       setDisplay(display + value);
+     }
 
     //logic to handle input states and reaction
+    /*
     const input = String(value)
     if (calcState === "EMPTY") {
       if (isNumber(input)) { setNum1(input); setDisplay(value); setCalcState("NUM1")}
@@ -114,7 +115,7 @@ function App() {
       if (isNumber(input)) { resetInputs(); setNum1(input); setDisplay(value); setCalcState("NUM1")}
       else if (isUnaryOperator(input)) { resetInputs(); setOperator(input); setDisplay(value); setCalcState("UNARY")}
       return
-    }
+    }*/
   };
 
   const handleDeleteKey= () => {
