@@ -1,13 +1,28 @@
 import re 
 from backend.calculations import (
-    add, 
+    add,
     subtract,
     multiply,
     divide,
-    power
+    power,
+    square,
+    square_root,
+    percentage,
+    absolute_value,
+    reciprocal,
+    sine,
+    cosine,
+    tangent,
+    cosecant,
+    secant,
+    cotangent,
 )
 
-TOKEN = re.compile(r"\s*(\d+\.?\d*|\.|d+|[-+*/^()])")
+operators = ["+", "-", "×", "÷", "^", "(", ")", "%"] # this is an updatable list of operators that get parsed
+operator_pattern = "".join(re.escape(op) for op in operators)
+TOKEN = re.compile(
+    rf"\s*(\d+(?:\.\d*)?|\.\d+|[{operator_pattern}])"
+)
 
 def tokenize(expr):
     tokens, pos = [], 0
@@ -18,6 +33,28 @@ def tokenize(expr):
         tokens.append(token)
         pos = m.end()
     return tokens
+
+### this happens in app.py
+# raw expression string
+# ↓
+# tokenize(...)
+# ↓
+# list of tokens
+# ↓
+# Parser(tokens)
+# ↓
+# parser.expr()
+
+### this happens in this Parser class (PEMDAS order but reverse because nesting returns backwards)
+# expr() → handles + and -
+# ↓
+# term() → handles * and /
+# ↓
+# unary() → handles unary -, like -5
+# ↓
+# factor() → handles ^
+# ↓
+# atom() → handles numbers and (...)
 
 class Parser:
     def __init__(self, tokens):
@@ -47,12 +84,12 @@ class Parser:
 
     def term(self):
         v = self.unary()
-        while self.peek() in ('*', '/'):
+        while self.peek() in ('×', '÷'):
             op = self.next()
             r = self.unary()
-            if op == '*':
+            if op == '×':
                 v = multiply(v, r)
-            elif op == '/':
+            elif op == '÷':
                 v = divide(v, r)
         return v
 

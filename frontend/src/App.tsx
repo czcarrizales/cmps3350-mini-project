@@ -1,66 +1,66 @@
 import { useState } from "react";
 import "./App.css";
-import { calculate } from "./api";
+// import { calculate } from "./api";
 
-//helper logic functions
+// //helper logic functions
 const binaryOperators = ["+", "-", "×", "÷", "^"] // check list for full inclusions
 const unaryOperators = ["sin", "cos", "tan", "sqrt", "square", "abs", "1/x"] // check list for full inclusions
-function isNumber(value: string) { return /^[0-9.]$/.test(value)}
-function isBinaryOperator(value: string) { return binaryOperators.includes(value)}
-function isUnaryOperator(value: string) { return unaryOperators.includes(value)}
+// function isNumber(value: string) { return /^[0-9.]$/.test(value)}
+// function isBinaryOperator(value: string) { return binaryOperators.includes(value)}
+// function isUnaryOperator(value: string) { return unaryOperators.includes(value)}
+function isOperator(value: string) { return unaryOperators.includes(value) || binaryOperators.includes(value)}
 
 function App() {
   const [display, setDisplay] = useState("0");
 
 
-  //values to handle number and operator storage
-  const [num1, setNum1] = useState<string | null>(null)
-  const [operator, setOperator] = useState<string | null>(null)
-  const [num2, setNum2] = useState<string | null>(null)
+  // //values to handle number and operator storage
+  // const [num1, setNum1] = useState<string | null>(null)
+  // const [operator, setOperator] = useState<string | null>(null)
+  // const [num2, setNum2] = useState<string | null>(null)
+  // const [calcState, setCalcState] = useState<CalcState>("EMPTY")
+  // type CalcState = "EMPTY" | "NUM1" | "BINARY" | "UNARY" | "UNARY_NUM" | "BINARY_NUMS" | "ANSWER"
+  // // example states: __        34       34+        sin        sin(34        34+8          <result>
 
-  function resetInputs() { setNum1(null); setOperator(null); setNum2(null); setCalcState("EMPTY")}
+  // function resetInputs() { setNum1(null); setOperator(null); setNum2(null); setCalcState("EMPTY")}
 
   function clearCalculator() {
-  setDisplay("0");
-  resetInputs();
+    setDisplay("0");
+    // resetInputs();
   }
 
-  async function calculateSafely(
-    firstNumber: string | null,
-    selectedOperator: string | null,
-    secondNumber?: string | null
-  ) {
-    if (firstNumber === null || selectedOperator === null) {
-      return;
-    }
-
-    try {
-      const data = await calculate(
-        Number(firstNumber),
-        selectedOperator,
-        secondNumber === null || secondNumber === undefined
-          ? undefined
-          : Number(secondNumber)
-      );
-
-      resetInputs();
-      setDisplay(String(data.result));
-      setCalcState("ANSWER");
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred";
-
-      resetInputs();
-      setDisplay(`Error: ${message}`);
-      setCalcState("ANSWER");
-    }
-  }
-
-  const [calcState, setCalcState] = useState<CalcState>("EMPTY")
-  type CalcState = "EMPTY" | "NUM1" | "BINARY" | "UNARY" | "UNARY_NUM" | "BINARY_NUMS" | "ANSWER"
-  // example states: __        34       34+        sin        sin(34        34+8          <result>
+  // async function calculateSafely(
+  //   firstNumber: string | null,
+  //   selectedOperator: string | null,
+  //   secondNumber?: string | null
+  // ) {
+  //   if (firstNumber === null || selectedOperator === null) {
+  //     return;
+  //   }
+  //
+  //   try {
+  //     const data = await calculate(
+  //       Number(firstNumber),
+  //       selectedOperator,
+  //       secondNumber === null || secondNumber === undefined
+  //         ? undefined
+  //         : Number(secondNumber)
+  //     );
+  //
+  //     // resetInputs();
+  //     setDisplay(String(data.result));
+  //     // setCalcState("ANSWER");
+  //   } catch (error) {
+  //     const message =
+  //       error instanceof Error
+  //         ? error.message
+  //         : "An unexpected error occurred";
+  //
+  //     // resetInputs();
+  //     setDisplay(`Error: ${message}`);
+  //     // setCalcState("ANSWER");
+  //   }
+  // }
 
   async function evaluate(expression: string) {
     const response = await fetch("http://127.0.0.1:5000/evaluate", {
@@ -81,30 +81,24 @@ function App() {
 
     // console.log("before:", value, calcState, num1, operator, num2)
 
-    // if (value === "C") {
-    //   setDisplay("0");
-    //   return;
-    // }
-
     if (value === "C") {
-  clearCalculator();
-  return;
-}
+      clearCalculator();
+      return;
+    }
     
     if (value === "=") {
       try {
-        const expression = display.replace(/×/g, "*").replace(/÷/g, "/");
-        setDisplay(await evaluate(expression));
+        setDisplay(await evaluate(display));
       } catch (e) {
         setDisplay((e as Error).message);
       }
-      resetInputs();
+      // resetInputs();
       return;
     }
 
      if (display === "0") {
        setDisplay(value);
-     } else {
+     } else if ( !(isOperator(display.at(-1)) && isOperator(value)) ) { //filters adding two operators in a row
        setDisplay(display + value);
      }
 
@@ -192,9 +186,9 @@ function App() {
     setDisplay(display.slice(0, -1));
   }
 
-  const handleEqualKey = () => {
-    
-  }
+  // const handleEqualKey = () => {
+  //
+  // }
 
   return (
     <div className="calculator">
