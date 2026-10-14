@@ -22,28 +22,47 @@ function App() {
   type CalcState = "EMPTY" | "NUM1" | "BINARY" | "UNARY" | "UNARY_NUM" | "BINARY_NUMS" | "ANSWER"
   // example states: __        34       34+        sin        sin(34        34+8          <result>
 
+  async function evaluate(expression: string) {
+    const response = await fetch("http://127.0.0.1:5000/evaluate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ expression }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error);
+    }
+    return String(data.result); 
+  }
 
-  const handleButtonClick = async (value) => {
-
-    // console.log("before:", value, calcState, num1, operator, num2)
-
+  const handleButtonClick = async (value: string) => {
     if (value === "C") {
       setDisplay("0");
+      resetInputs();
       return;
     }
     
-    // if (value === "=") {
-    //   // We'll connect this to the backend later.
-    //   return;
-    // }
+    if (value === "=") {
+      try {
+        const expression = display.replace(/×/g, "*").replace(/÷/g, "/");
+        setDisplay(await evaluate(expression));
+      } catch (e) {
+        setDisplay((e as Error).message);
+      }
+      resetInputs();
+      return;
+    }
 
-    // if (display === "0") {
-    //   setDisplay(value);
-    // } else {
-    //   setDisplay(display + value);
-    // }
+     if (display === "0") {
+       setDisplay(value);
+     } else {
+       setDisplay(display + value);
+     }
 
     //logic to handle input states and reaction
+    /*
     const input = String(value)
     if (calcState === "EMPTY") {
       if (isNumber(input)) { setNum1(input); setDisplay(value); setCalcState("NUM1")}
@@ -96,7 +115,7 @@ function App() {
       if (isNumber(input)) { resetInputs(); setNum1(input); setDisplay(value); setCalcState("NUM1")}
       else if (isUnaryOperator(input)) { resetInputs(); setOperator(input); setDisplay(value); setCalcState("UNARY")}
       return
-    }
+    }*/
   };
 
   const handleDeleteKey= () => {
@@ -114,6 +133,11 @@ function App() {
       <div className="display">{display}</div>
 
       <div className="buttons">
+        <button onClick={() => handleButtonClick("(")}>(</button>
+        <button onClick={() => handleButtonClick(")")}>)</button>
+        <button onClick={() => handleButtonClick("^")}>^</button>
+        <button onClick={() => handleButtonClick(".")}>.</button>
+        
         <button onClick={() => handleButtonClick("7")}>7</button>
         <button onClick={() => handleButtonClick("8")}>8</button>
         <button onClick={() => handleButtonClick("9")}>9</button>

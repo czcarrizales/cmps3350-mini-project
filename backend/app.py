@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+
 from backend.calculations import (
     add,
     subtract,
@@ -20,6 +21,7 @@ from backend.calculations import (
     cotangent,
 )
 
+from backend.parser import tokenize, Parser
 
 app = Flask(__name__)
 CORS(app)
@@ -88,6 +90,17 @@ def calculate():
     except (TypeError, ValueError, ZeroDivisionError) as error:
         return jsonify({"error": str(error)}), 400
 
+@app.post("/evaluate")
+def evaluate():
+    data = request.get_json(silent=True)
+    
+    parser = Parser(tokenize(str(data["expression"])))
+    result = parser.expr()
+       
+    if isinstance(result, float) and result.is_integer():
+        result = int(result)
+
+    return jsonify({"result": result})
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
