@@ -1,4 +1,5 @@
-import re 
+import re
+
 from backend.calculations import (
     add,
     subtract,
@@ -18,100 +19,192 @@ from backend.calculations import (
     cotangent,
 )
 
-operators = ["+", "-", "×", "÷", "^", "(", ")", "%"] # this is an updatable list of operators that get parsed
-operator_pattern = "".join(re.escape(op) for op in operators)
+
+# These are functions that take one value.
+# The text on the left is what the parser will recognize.
+functions = {
+    "sqrt": square_root,
+    "abs": absolute_value,
+    "recip": reciprocal,
+    "sin": sine,
+    "cos": cosine,
+    "tan": tangent,
+    "csc": cosecant,
+    "sec": secant,
+    "cot": cotangent,
+}
+
+
+# This pattern recognizes:
+# numbers, function names, and calculator symbols.
 TOKEN = re.compile(
-    rf"\s*(\d+(?:\.\d*)?|\.\d+|[{operator_pattern}])"
+    r"\s*(\d+(?:\.\d*)?|"
+    r"\.\d+|"
+    r"sqrt|abs|recip|sin|cos|tan|csc|sec|cot|"
+    r"[+\-×÷^()%²])"
 )
 
+
 def tokenize(expr):
-    tokens, pos = [], 0
+    tokens = []
+    pos = 0
     expr = expr.strip()
+
+    # Move through the expression from left to right
+    # and break it into pieces the parser understands.
     while pos < len(expr):
-        m = TOKEN.match(expr, pos)
-        token = m.group(1)
-        tokens.append(token)
-        pos = m.end()
+        match = TOKEN.match(expr, pos)
+
+        # If nothing matches here, the user entered
+        # something that this calculator does not understand.
+        if match is None:
+            raise ValueError("Invalid expression")
+
+        tokens.append(match.group(1))
+        pos = match.end()
+
     return tokens
 
-### this happens in app.py
-# raw expression string
-# ↓
-# tokenize(...)
-# ↓
-# list of tokens
-# ↓
-# Parser(tokens)
-# ↓
-# parser.expr()
-
-### this happens in this Parser class (PEMDAS order but reverse because nesting returns backwards)
-# expr() → handles + and -
-# ↓
-# term() → handles * and /
-# ↓
-# unary() → handles unary -, like -5
-# ↓
-# factor() → handles ^
-# ↓
-# atom() → handles numbers and (...)
 
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.pos = 0
 
+
+    # Look at the next token without removing it.
     def peek(self):
         if self.pos < len(self.tokens):
             return self.tokens[self.pos]
+
         return None
 
+
+    # Get the next token and move forward.
     def next(self):
         token = self.peek()
         self.pos += 1
         return token
 
+
+    # Lowest priority:
+    # addition and subtraction
     def expr(self):
-        v = self.term()
-        while self.peek() in ('+', '-'):
-            op = self.next()
-            r = self.term()
-            if op == '+':
-                v = add(v, r)
-            elif op == '-':
-                v = subtract(v, r)
-        return v
+        value = self.term()
 
+        while self.peek() in ("+", "-"):
+            operator = self.next()
+            right = self.term()
+
+            if operator == "+":
+                value = add(value, right)
+
+            elif operator == "-":
+                value = subtract(value, right)
+
+        return value
+
+
+    # Multiplication and division happen
+    # before addition and subtraction.
     def term(self):
-        v = self.unary()
-        while self.peek() in ('×', '÷'):
-            op = self.next()
-            r = self.unary()
-            if op == '×':
-                v = multiply(v, r)
-            elif op == '÷':
-                v = divide(v, r)
-        return v
+        value = self.unary()
 
+        while self.peek() in ("×", "÷"):
+            operator = self.next()
+            right = self.unary()
+
+            if operator == "×":
+                value = multiply(value, right)
+
+            elif operator == "÷":
+                value = divide(value, right)
+
+        return value
+
+
+    # Handles negative numbers and functions
+    # such as sqrt(...), sin(...), etc.
     def unary(self):
-        if self.peek() == '-':
+        # Example: -5
+        if self.peek() == "-":
             self.next()
             return -self.unary()
+
+        # Example: sqrt(9)
+        if self.peek() in functions:
+            function_name = self.next()
+
+            # A function must be followed by (
+            if self.next() != "(":
+                raise ValueError(
+                    f"{function_name} must be followed by parentheses"
+                )
+
+            value = self.expr()
+
+            # Make sure the function has a closing )
+            if self.next() != ")":
+                raise ValueError("Missing closing parenthesis")
+
+            # Run the matching function from calculations.py.
+            return functions[function_name](value)
+
         return self.factor()
 
-    def factor(self):
-        base = self.atom()
-        if self.peek() == '^':
-            self.next()
-            return power(base, self.unary())
-        return base
 
+    # Handles exponents.
+    def factor(self):
+        value = self.postfix()
+
+        if self.peek() == "^":
+            self.next()
+            exponent = self.unary()
+            value = power(value, exponent)
+
+        return value
+
+
+    # Handles operations that come AFTER a number.
+    #
+    # Examples:
+    # 50%     -> percentage(50)
+    # 5²      -> square(5)
+    def postfix(self):
+        value = self.atom()
+
+        while self.peek() in ("%", "²"):
+            operator = self.next()
+
+            if operator == "%":
+                value = percentage(value)
+
+            elif operator == "²":
+                value = square(value)
+
+        return value
+
+
+    # Highest-level basic pieces:
+    # numbers and parentheses.
     def atom(self):
         token = self.next()
-        
-        if token == '(':
-            v = self.expr()
-            self.next()
-            return v
-        
-        return float(token)
+
+        if token is None:
+            raise ValueError("Incomplete expression")
+
+        # Example: (5 + 3)
+        if token == "(":
+            value = self.expr()
+
+            if self.next() != ")":
+                raise ValueError("Missing closing parenthesis")
+
+            return value
+
+        # Anything else here should be a number.
+        try:
+            return float(token)
+
+        except ValueError:
+            raise ValueError("Invalid expression")
