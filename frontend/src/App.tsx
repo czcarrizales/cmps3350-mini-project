@@ -1,67 +1,36 @@
 import { useState } from "react";
 import "./App.css";
-// import { calculate } from "./api";
 
-// //helper logic functions
-const binaryOperators = ["+", "-", "×", "÷", "^"] // check list for full inclusions
-const unaryOperators = ["sin", "cos", "tan", "sqrt", "square", "abs", "1/x"] // check list for full inclusions
-// function isNumber(value: string) { return /^[0-9.]$/.test(value)}
-// function isBinaryOperator(value: string) { return binaryOperators.includes(value)}
-// function isUnaryOperator(value: string) { return unaryOperators.includes(value)}
-function isOperator(value: string) { return unaryOperators.includes(value) || binaryOperators.includes(value)}
+
+// One saved calculation in the history.
+type HistoryItem = {
+  expression: string;
+  result: string;
+};
+
 
 function App() {
+  // What is currently shown on the calculator screen.
   const [display, setDisplay] = useState("0");
 
+  // Stores only the 3 most recent successful calculations.
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
-  // //values to handle number and operator storage
-  // const [num1, setNum1] = useState<string | null>(null)
-  // const [operator, setOperator] = useState<string | null>(null)
-  // const [num2, setNum2] = useState<string | null>(null)
-  // const [calcState, setCalcState] = useState<CalcState>("EMPTY")
-  // type CalcState = "EMPTY" | "NUM1" | "BINARY" | "UNARY" | "UNARY_NUM" | "BINARY_NUMS" | "ANSWER"
-  // // example states: __        34       34+        sin        sin(34        34+8          <result>
+  // Controls whether the history panel is visible.
+  const [showHistory, setShowHistory] = useState(false);
 
-  // function resetInputs() { setNum1(null); setOperator(null); setNum2(null); setCalcState("EMPTY")}
+  // Lets us know that the last thing the user did was press "=".
+  // This helps decide whether the next button should start a new
+  // calculation or continue using the previous answer.
+  const [justEvaluated, setJustEvaluated] = useState(false);
 
-  function clearCalculator() {
-    setDisplay("0");
-    // resetInputs();
-  }
 
-  // async function calculateSafely(
-  //   firstNumber: string | null,
-  //   selectedOperator: string | null,
-  //   secondNumber?: string | null
-  // ) {
-  //   if (firstNumber === null || selectedOperator === null) {
-  //     return;
-  //   }
+  // Send the full expression to the Flask backend.
   //
-  //   try {
-  //     const data = await calculate(
-  //       Number(firstNumber),
-  //       selectedOperator,
-  //       secondNumber === null || secondNumber === undefined
-  //         ? undefined
-  //         : Number(secondNumber)
-  //     );
+  // Example:
+  // "5+3×2"
   //
-  //     // resetInputs();
-  //     setDisplay(String(data.result));
-  //     // setCalcState("ANSWER");
-  //   } catch (error) {
-  //     const message =
-  //       error instanceof Error
-  //         ? error.message
-  //         : "An unexpected error occurred";
-  //
-  //     // resetInputs();
-  //     setDisplay(`Error: ${message}`);
-  //     // setCalcState("ANSWER");
-  //   }
-  // }
-
+  // The backend/parser handles PEMDAS and returns the answer.
   async function evaluate(expression: string) {
     const response = await fetch("http://127.0.0.1:5000/evaluate", {
       method: "POST",
@@ -70,161 +39,321 @@ function App() {
       },
       body: JSON.stringify({ expression }),
     });
+
     const data = await response.json();
+
+    // If the backend returned an error,
+    // send that error to the catch block below.
     if (!response.ok) {
-      throw new Error(data.error);
+      throw new Error(data.error || "Calculation failed");
     }
-    return String(data.result); 
+
+    return String(data.result);
   }
 
-  const handleButtonClick = async (value) => {
 
-    // console.log("before:", value, calcState, num1, operator, num2)
+  // Clear the current calculation.
+  // This does NOT erase calculation history.
+  function clearCalculator() {
+    setDisplay("0");
+    setJustEvaluated(false);
+  }
 
+
+  // Delete the last character from the display.
+  function handleDeleteKey() {
+    if (display.length <= 1) {
+      setDisplay("0");
+    } else {
+      setDisplay(display.slice(0, -1));
+    }
+
+    setJustEvaluated(false);
+  }
+
+
+  // Handles nearly every calculator button.
+  async function handleButtonClick(value: string) {
+    // Clear button
     if (value === "C") {
       clearCalculator();
       return;
     }
-    
+
+
+    // Equals button
     if (value === "=") {
       try {
-        setDisplay(await evaluate(display));
-      } catch (e) {
-        setDisplay((e as Error).message);
+        // Save the expression before the display
+        // gets replaced by the answer.
+        const expression = display;
+
+        const result = await evaluate(expression);
+
+        // Add the newest successful calculation
+        // to the beginning of history.
+        //
+        // slice(0, 3) means we keep only
+        // the 3 newest calculations.
+        setHistory((previousHistory) =>
+          [
+            { expression, result },
+            ...previousHistory,
+          ].slice(0, 3)
+        );
+
+        setDisplay(result);
+        setJustEvaluated(true);
+
+      } catch (error) {
+        // Show a readable backend error on the calculator.
+        const message =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred";
+
+        setDisplay(`Error: ${message}`);
+        setJustEvaluated(true);
       }
-      // resetInputs();
+
       return;
     }
 
-     if (display === "0") {
-       setDisplay(value);
-     } else if ( !(isOperator(display.at(-1)) && isOperator(value)) ) { //filters adding two operators in a row
-       setDisplay(display + value);
-     }
 
-    //logic to handle input states and reaction
-    /*
-    const input = String(value)
-    if (calcState === "EMPTY") {
-      if (isNumber(input)) { setNum1(input); setDisplay(value); setCalcState("NUM1")}
-      else if (isUnaryOperator(input)) { setOperator(input); setDisplay(value); setCalcState("UNARY")}
-      return
-    }
-    if (calcState === "NUM1") {
-      if (isNumber(input)) { setNum1(num1 => (num1 ?? "") + input); setDisplay(display + value);}
-      else if (isBinaryOperator(input)) { setOperator(input); setDisplay(display + value); setCalcState("BINARY")}
-      //else if (isUnaryOperator(input)) {
-       // setOperator(input);
-       // const data = await calculate(num1, operator); //sends data to backend
-        //resetInputs();
-        //setDisplay(String(data.result));
-        // console.log("FULL RESPONSE:", data)
-        //setCalcState("ANSWER");}
-        else if (isUnaryOperator(input)) {
-        setOperator(input);
-        await calculateSafely(num1, input);
-      }
-      return
-    }
-    if (calcState === "BINARY") {
-      if (isNumber(input)) { setNum2(input); setDisplay(display + value); setCalcState("BINARY_NUMS")}
-      return
-    }
-    if (calcState === "UNARY") {
-      if (isNumber(input)) { setNum1(input); setDisplay(display + value); setCalcState("UNARY_NUM")}
-      return
-    }
-    // if (calcState === "BINARY_NUMS") {
-    //   if (isNumber(input)) { setNum2(num2 => (num2 ?? "") + input); setDisplay(display + value);}
-    //   else if (input === "=") {
-    //     setNum2(num2 => (num2 ?? "") + input);
-    //     const data = await calculate(num1, operator, num2) //sends data to backend
-    //     resetInputs();
-    //     setDisplay(String(data.result));
-    //     // console.log("FULL RESPONSE:", data)
-    //     setCalcState("ANSWER");}
-    // return
-    //}
-        if (calcState === "BINARY_NUMS") {
-      if (isNumber(input)) {
-        setNum2(num2 => (num2 ?? "") + input);
+    // These are operations that can continue using
+    // the previous answer.
+    //
+    // Example:
+    // 5 + 5 = 10
+    // then pressing "+" allows:
+    // 10+
+    const continuationOperators = [
+      "+",
+      "-",
+      "×",
+      "÷",
+      "^",
+      "%",
+      "²",
+    ];
+
+
+    // If "=" was just pressed:
+    if (justEvaluated) {
+      // If the next button is an operator,
+      // continue calculating with the previous answer.
+      if (continuationOperators.includes(value)) {
         setDisplay(display + value);
-      } else if (input === "=") {
-        await calculateSafely(num1, operator, num2);
       }
-      return;
-    }
-    // if (calcState === "UNARY_NUM") {
-    //   if (isNumber(input)) { setNum1(num1 => (num1 ?? "") + input); setDisplay(display + value);}
-    //   else if (input === "=") {
-    //     setNum1(num1 => (num1 ?? "") + input);
-    //     const data = await calculate(num1, operator, num2); //sends data to backend
-    //     resetInputs();
-    //     setDisplay(String(data.result));
-    //     // console.log("FULL RESPONSE:", data)
-    //     setCalcState("ANSWER");}
-    //   return
-    // }
-        if (calcState === "UNARY_NUM") {
-      if (isNumber(input)) {
-        setNum1(num1 => (num1 ?? "") + input);
-        setDisplay(display + value);
-      } else if (input === "=") {
-        await calculateSafely(num1, operator);
+
+      // Otherwise, start a completely new calculation.
+      else {
+        setDisplay(value);
       }
+
+      setJustEvaluated(false);
       return;
     }
 
-    if (calcState === "ANSWER") {
-      if (isNumber(input)) { resetInputs(); setNum1(input); setDisplay(value); setCalcState("NUM1")}
-      else if (isUnaryOperator(input)) { resetInputs(); setOperator(input); setDisplay(value); setCalcState("UNARY")}
-      return
-    }*/
-  };
 
-  const handleDeleteKey= () => {
-    setDisplay(display.slice(0, -1));
+    // Replace the starting 0 instead of creating things
+    // like "05".
+    if (display === "0") {
+      setDisplay(value);
+      return;
+    }
+
+
+    // Otherwise, add the pressed button to the expression.
+    setDisplay(display + value);
   }
 
-  // const handleEqualKey = () => {
-  //
-  // }
 
   return (
     <div className="calculator">
-      <h1>Calculator</h1>
 
-      <div className="display">{display}</div>
+      {/* Calculator title and history button */}
+      <div className="calculator-header">
+        <h1>Calculator</h1>
+
+        <button
+          className="history-button"
+          onClick={() => setShowHistory(!showHistory)}
+        >
+          History
+        </button>
+      </div>
+
+
+      {/* Only show this section when History is clicked */}
+      {showHistory && (
+        <div className="history">
+          <h3>Recent Calculations</h3>
+
+          {history.length === 0 ? (
+            <p>No calculations yet.</p>
+          ) : (
+            history.map((item, index) => (
+              <div className="history-item" key={index}>
+                <div>{item.expression}</div>
+                <strong>= {item.result}</strong>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+
+      {/* Current expression or result */}
+      <div className="display">
+        {display}
+      </div>
+
 
       <div className="buttons">
-        <button onClick={() => handleButtonClick("(")}>(</button>
-        <button onClick={() => handleButtonClick(")")}>)</button>
-        <button onClick={() => handleButtonClick("^")}>^</button>
-        <button onClick={() => handleButtonClick(".")}>.</button>
-        
-        <button onClick={() => handleButtonClick("7")}>7</button>
-        <button onClick={() => handleButtonClick("8")}>8</button>
-        <button onClick={() => handleButtonClick("9")}>9</button>
-        <button onClick={() => handleDeleteKey()}>DEL</button>
-        
 
-        <button onClick={() => handleButtonClick("4")}>4</button>
-        <button onClick={() => handleButtonClick("5")}>5</button>
-        <button onClick={() => handleButtonClick("6")}>6</button>
-        <button onClick={() => handleButtonClick("×")}>×</button>
+        {/* Trigonometric functions */}
+        <button onClick={() => handleButtonClick("sin(")}>
+          sin
+        </button>
 
-        <button onClick={() => handleButtonClick("1")}>1</button>
-        <button onClick={() => handleButtonClick("2")}>2</button>
-        <button onClick={() => handleButtonClick("3")}>3</button>
-        <button onClick={() => handleButtonClick("-")}>−</button>
+        <button onClick={() => handleButtonClick("cos(")}>
+          cos
+        </button>
 
-        <button onClick={() => handleButtonClick("C")}>C</button>
-        <button onClick={() => handleButtonClick("0")}>0</button>
-        <button onClick={() => handleButtonClick("+")}>+</button>
-        <button onClick={() => handleButtonClick("÷")}>÷</button>
-        <button className="equals" onClick={() => handleButtonClick("=")}>
+        <button onClick={() => handleButtonClick("tan(")}>
+          tan
+        </button>
+
+        <button onClick={() => handleButtonClick("sqrt(")}>
+          √
+        </button>
+
+
+        <button onClick={() => handleButtonClick("csc(")}>
+          csc
+        </button>
+
+        <button onClick={() => handleButtonClick("sec(")}>
+          sec
+        </button>
+
+        <button onClick={() => handleButtonClick("cot(")}>
+          cot
+        </button>
+
+        <button onClick={() => handleButtonClick("²")}>
+          x²
+        </button>
+
+
+        {/* Other unary/special operations */}
+        <button onClick={() => handleButtonClick("abs(")}>
+          |x|
+        </button>
+
+        <button onClick={() => handleButtonClick("recip(")}>
+          1/x
+        </button>
+
+        <button onClick={() => handleButtonClick("%")}>
+          %
+        </button>
+
+        <button onClick={() => handleButtonClick("^")}>
+          xʸ
+        </button>
+
+
+        {/* Parentheses and editing */}
+        <button onClick={() => handleButtonClick("(")}>
+          (
+        </button>
+
+        <button onClick={() => handleButtonClick(")")}>
+          )
+        </button>
+
+        <button onClick={() => handleButtonClick("C")}>
+          C
+        </button>
+
+        <button onClick={handleDeleteKey}>
+          DEL
+        </button>
+
+
+        {/* Number pad */}
+        <button onClick={() => handleButtonClick("7")}>
+          7
+        </button>
+
+        <button onClick={() => handleButtonClick("8")}>
+          8
+        </button>
+
+        <button onClick={() => handleButtonClick("9")}>
+          9
+        </button>
+
+        <button onClick={() => handleButtonClick("÷")}>
+          ÷
+        </button>
+
+
+        <button onClick={() => handleButtonClick("4")}>
+          4
+        </button>
+
+        <button onClick={() => handleButtonClick("5")}>
+          5
+        </button>
+
+        <button onClick={() => handleButtonClick("6")}>
+          6
+        </button>
+
+        <button onClick={() => handleButtonClick("×")}>
+          ×
+        </button>
+
+
+        <button onClick={() => handleButtonClick("1")}>
+          1
+        </button>
+
+        <button onClick={() => handleButtonClick("2")}>
+          2
+        </button>
+
+        <button onClick={() => handleButtonClick("3")}>
+          3
+        </button>
+
+        <button onClick={() => handleButtonClick("-")}>
+          −
+        </button>
+
+
+        <button onClick={() => handleButtonClick("0")}>
+          0
+        </button>
+
+        <button onClick={() => handleButtonClick(".")}>
+          .
+        </button>
+
+        <button onClick={() => handleButtonClick("+")}>
+          +
+        </button>
+
+        <button
+          className="equals"
+          onClick={() => handleButtonClick("=")}
+        >
           =
         </button>
+
       </div>
     </div>
   );
