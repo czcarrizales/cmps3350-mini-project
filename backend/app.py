@@ -94,7 +94,10 @@ def evaluate():
     parser = Parser(tokenize(str(data["expression"])))
     result = parser.expr()
        
-    if isinstance(result, float) and result.is_integer():
+    if isinstance(result, float):
+        result = round(result, 4)
+
+    if result.is_integer():
         result = int(result)
 
     return jsonify({"result": result})
