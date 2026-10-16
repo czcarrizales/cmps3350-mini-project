@@ -1,6 +1,12 @@
 import { useState } from "react";
 import "./App.css";
 
+// click_sound1 - https://freesound.org/people/potentjello/sounds/194072/ - Buttons and Knobs 1.wav - potentjello
+// click_sound2 - https://freesound.org/people/herraportti/sounds/436667/ - snap3.wav - herraportti
+const click_sound1 = new Audio("/click1.wav");
+const click_sound2 = new Audio("/click2.wav");
+click_sound1.volume = 0.03;
+click_sound2.volume = 0.3;
 
 // One saved calculation in the history.
 type HistoryItem = {
@@ -8,6 +14,8 @@ type HistoryItem = {
   result: string;
 };
 
+const Operators = ["+", "-", "×", "÷", "^", ] // symbols that can't appear twice in a row
+function isNonduplicateOperator(value: string) { return Operators.includes(value)}
 
 function App() {
   // What is currently shown on the calculator screen.
@@ -51,7 +59,6 @@ const [showAdvanced, setShowAdvanced] = useState(false);
     return String(data.result);
   }
 
-
   // Clear the current calculation.
   // This does NOT erase calculation history.
   function clearCalculator() {
@@ -72,6 +79,52 @@ const [showAdvanced, setShowAdvanced] = useState(false);
   }
 
 
+
+  // toggle between display formatting for default display, fractional display, and scientific notation display
+  type DisplayMode = "normal" | "fraction" | "scientific";
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("normal");
+  function formatDisplay(value: string, mode: DisplayMode): string {
+    const number = Number(value);
+
+    // Don't try to format expressions/errors/etc.
+    if (Number.isNaN(number)) {
+      return value;
+    }
+    if (mode === "normal") {
+      return String(number);
+    }
+    if (mode === "scientific") {
+      return number.toExponential();
+    }
+    if (mode === "fraction") {
+      return decimalToFraction(number);
+    }
+    return value;
+  }
+  function decimalToFraction(value: number): string {
+    const maxDenominator = 100;
+
+    let bestNumerator = 1;
+    let bestDenominator = 1;
+    let smallestError = Math.abs(value - 1);
+
+    for (let denominator = 1; denominator <= maxDenominator; denominator++) {
+      const numerator = Math.round(value * denominator);
+      const error = Math.abs(value - numerator / denominator);
+
+      if (error < smallestError) {
+        smallestError = error;
+        bestNumerator = numerator;
+        bestDenominator = denominator;
+      }
+    }
+
+    return `${bestNumerator}/${bestDenominator}`;
+  }
+
+
+
+
   // Handles nearly every calculator button.
   async function handleButtonClick(value: string) {
     // Clear button
@@ -80,9 +133,17 @@ const [showAdvanced, setShowAdvanced] = useState(false);
       return;
     }
 
+    function safeSetDisplay() { //filters adding two operators in a row
+      if (!(isNonduplicateOperator(display.at(-1) ?? "") && isNonduplicateOperator(value))) {
+        setDisplay(display + value);
+      }
+    }
 
     // Equals button
     if (value === "=") {
+      click_sound2.currentTime = 0;
+      click_sound2.play();
+
       try {
         // Save the expression before the display
         // gets replaced by the answer.
@@ -117,8 +178,20 @@ const [showAdvanced, setShowAdvanced] = useState(false);
       }
 
       return;
+    } else {
+      click_sound1.currentTime = 0;
+      click_sound1.play();
     }
 
+    if (value === "format") {
+      setDisplayMode(current => {
+        if (current === "normal") return "fraction";
+        if (current === "fraction") return "scientific";
+        return "normal";
+      });
+
+      return;
+    }
 
     // These are operations that can continue using
     // the previous answer.
@@ -135,6 +208,7 @@ const [showAdvanced, setShowAdvanced] = useState(false);
       "^",
       "%",
       "²",
+      "!",
     ];
 
 
@@ -165,7 +239,7 @@ const [showAdvanced, setShowAdvanced] = useState(false);
 
 
     // Otherwise, add the pressed button to the expression.
-    setDisplay(display + value);
+    safeSetDisplay();
   }
 
 
@@ -209,12 +283,17 @@ const [showAdvanced, setShowAdvanced] = useState(false);
   )}
 
   <div className="display-card">
-    <div className="display">{display}</div>
+    <div className="display">{formatDisplay(display, displayMode)}</div>
   </div>
 
   <div className="buttons">
-    {showAdvanced && (
+    {showAdvanced && ( // showAdvanced = scientific layout
     <>
+      <button onClick={() => handleButtonClick("ln(")}>ln</button>
+      <button onClick={() => handleButtonClick("log(")}>log</button>
+      <button onClick={() => handleButtonClick("mod(")}>mod</button>
+      <button onClick={() => handleButtonClick("!")}>x!</button>
+
       <button onClick={() => handleButtonClick("sin(")}>sin</button>
       <button onClick={() => handleButtonClick("cos(")}>cos</button>
       <button onClick={() => handleButtonClick("tan(")}>tan</button>
@@ -229,12 +308,17 @@ const [showAdvanced, setShowAdvanced] = useState(false);
       <button onClick={() => handleButtonClick("recip(")}>1/x</button>
       <button onClick={() => handleButtonClick("%")}>%</button>
       <button onClick={() => handleButtonClick("^")}>xʸ</button>
+
+      <button onClick={() => handleButtonClick("(")}>(</button>
+      <button onClick={() => handleButtonClick(")")}>)</button>
+      <button onClick={() => handleButtonClick("π")}>pi</button>
+      <button onClick={() => handleButtonClick("e")}>e</button>
     </>
   )}
-    <button onClick={() => handleButtonClick("(")}>(</button>
-    <button onClick={() => handleButtonClick(")")}>)</button>
     <button onClick={() => handleButtonClick("C")}>C</button>
     <button onClick={handleDeleteKey}>DEL</button>
+    <button onClick={() => handleButtonClick("format")}>format</button>
+    <button onClick={() => handleButtonClick("×")}>×</button>
 
     <button onClick={() => handleButtonClick("7")}>7</button>
     <button onClick={() => handleButtonClick("8")}>8</button>
