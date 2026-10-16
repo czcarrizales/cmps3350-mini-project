@@ -17,6 +17,12 @@ from backend.calculations import (
     cosecant,
     secant,
     cotangent,
+    natural_log,
+    log,
+    modula,
+    factorial,
+    pi_constant,
+    e_constant,
 )
 
 
@@ -32,6 +38,9 @@ functions = {
     "csc": cosecant,
     "sec": secant,
     "cot": cotangent,
+    "ln": natural_log,
+    "log": log,
+    "mod": modula,
 }
 
 
@@ -40,8 +49,8 @@ functions = {
 TOKEN = re.compile(
     r"\s*(\d+(?:\.\d*)?|"
     r"\.\d+|"
-    r"sqrt|abs|recip|sin|cos|tan|csc|sec|cot|"
-    r"[+\-×÷^()%²])"
+    r"sqrt|abs|recip|sin|cos|tan|csc|sec|cot|ln|log|mod|"
+    r"[+\-×÷^()%²!πe])"
 )
 
 
@@ -86,6 +95,21 @@ class Parser:
         self.pos += 1
         return token
 
+    def starts_value(self, token):
+        if token is None:
+            return False
+
+        if token in ("π", "e", "("):
+            return True
+
+        if token in functions:
+            return True
+
+        try:
+            float(token)
+            return True
+        except ValueError:
+            return False
 
     # Lowest priority:
     # addition and subtraction
@@ -110,15 +134,26 @@ class Parser:
     def term(self):
         value = self.unary()
 
-        while self.peek() in ("×", "÷"):
-            operator = self.next()
-            right = self.unary()
+        while True:
 
-            if operator == "×":
+            # Explicit multiplication/division
+            if self.peek() in ("×", "÷"):
+                operator = self.next()
+                right = self.unary()
+
+                if operator == "×":
+                    value = multiply(value, right)
+
+                elif operator == "÷":
+                    value = divide(value, right)
+
+            # Implicit multiplication
+            elif self.starts_value(self.peek()):
+                right = self.unary()
                 value = multiply(value, right)
 
-            elif operator == "÷":
-                value = divide(value, right)
+            else:
+                break
 
         return value
 
@@ -144,7 +179,7 @@ class Parser:
             value = self.expr()
 
             # Make sure the function has a closing )
-            if self.next() != ")":
+            if self.peek() is not None and self.next() != ")":
                 raise ValueError("Missing closing parenthesis")
 
             # Run the matching function from calculations.py.
@@ -170,10 +205,11 @@ class Parser:
     # Examples:
     # 50%     -> percentage(50)
     # 5²      -> square(5)
+    # 5!      -> factorial(5)
     def postfix(self):
         value = self.atom()
 
-        while self.peek() in ("%", "²"):
+        while self.peek() in ("%", "²", "!"):
             operator = self.next()
 
             if operator == "%":
@@ -181,6 +217,12 @@ class Parser:
 
             elif operator == "²":
                 value = square(value)
+
+            elif operator == "!":
+                if value < 0 or not float(value).is_integer():
+                    raise ValueError("Factorial requires a nonnegative integer")
+                else:
+                    value = factorial(int(value))
 
         return value
 
@@ -193,7 +235,12 @@ class Parser:
         if token is None:
             raise ValueError("Incomplete expression")
 
-        # Example: (5 + 3)
+        if token == "π":
+            return pi_constant()
+
+        if token == "e":
+            return e_constant()
+
         if token == "(":
             value = self.expr()
 
@@ -202,7 +249,6 @@ class Parser:
 
             return value
 
-        # Anything else here should be a number.
         try:
             return float(token)
 

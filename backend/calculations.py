@@ -76,4 +76,17 @@ def cotangent(radians):
         raise ValueError("Cotangent is undefined")
     return 1 / math.tan(radians)
 
+def natural_log(num):
+    return math.log(num)
+def log(num):
+    return math.log(num)
+def modula(num1, num2):
+    return num1 % num2
+def factorial(num):
+    return math.factorial(num)
+def pi_constant():
+    return math.pi
+def e_constant():
+    return math.e
+
 
