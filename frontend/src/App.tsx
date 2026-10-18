@@ -14,8 +14,12 @@ type HistoryItem = {
   result: string;
 };
 
-const Operators = ["+", "-", "×", "÷", "^", ] // symbols that can't appear twice in a row
+const Operators = ["+", "-", "×", "÷", "^", "mod" ] // symbols that can't appear twice in a row
 function isNonduplicateOperator(value: string) { return Operators.includes(value)}
+
+function endsWithOperator(expression: string) {
+  return Operators.some((operator) => expression.endsWith(operator));
+}
 
 function App() {
   // What is currently shown on the calculator screen.
@@ -134,7 +138,8 @@ const [showAdvanced, setShowAdvanced] = useState(false);
     }
 
     function safeSetDisplay() { //filters adding two operators in a row
-      if (!(isNonduplicateOperator(display.at(-1) ?? "") && isNonduplicateOperator(value))) {
+      //if (!(isNonduplicateOperator(display.at(-1) ?? "") && isNonduplicateOperator(value))) {
+      if (!(endsWithOperator(display) && isNonduplicateOperator(value))) {
         setDisplay(display + value);
       }
     }
@@ -209,6 +214,7 @@ const [showAdvanced, setShowAdvanced] = useState(false);
       "%",
       "²",
       "!",
+      "mod",
     ];
 
 
@@ -291,7 +297,7 @@ const [showAdvanced, setShowAdvanced] = useState(false);
     <>
       <button onClick={() => handleButtonClick("ln(")}>ln</button>
       <button onClick={() => handleButtonClick("log(")}>log</button>
-      <button onClick={() => handleButtonClick("mod(")}>mod</button>
+      <button onClick={() => handleButtonClick("mod")}>mod</button>
       <button onClick={() => handleButtonClick("!")}>x!</button>
 
       <button onClick={() => handleButtonClick("sin(")}>sin</button>
