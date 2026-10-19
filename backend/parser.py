@@ -40,7 +40,7 @@ functions = {
     "cot": cotangent,
     "ln": natural_log,
     "log": log,
-    "mod": modula,
+    # "mod": modula,
 }
 
 
@@ -137,7 +137,7 @@ class Parser:
         while True:
 
             # Explicit multiplication/division
-            if self.peek() in ("×", "÷"):
+            if self.peek() in ("×", "÷", "mod"):
                 operator = self.next()
                 right = self.unary()
 
@@ -146,6 +146,8 @@ class Parser:
 
                 elif operator == "÷":
                     value = divide(value, right)
+                elif operator == "mod":
+                    value = modula(value, right)    
 
             # Implicit multiplication
             elif self.starts_value(self.peek()):
